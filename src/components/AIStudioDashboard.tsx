@@ -102,13 +102,68 @@ export const AIStudioDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) 
 
   const [isPredicting, setIsPredicting] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [results, setResults] = useState({
+    probability: 7.3,
+    tier: 'Low',
+    attribution: [
+      { label: 'Activity Entropy', value: 45, color: 'bg-cyan-400' },
+      { label: 'Login Irregularity', value: 32, color: 'bg-purple-400' },
+      { label: 'Late Night Ratio', value: 18, color: 'bg-blue-400' },
+      { label: 'Attendance %', value: -12, color: 'bg-rose-400' },
+      { label: 'Attendance Trend', value: -8, color: 'bg-amber-400' },
+    ],
+    draft: "Dear Student, we've noticed some changes in your recent academic engagement patterns, particularly regarding your login irregularity and late-night activity. We're reaching out to share some study resources and wellness tips that might be helpful for maintaining a sustainable routine."
+  });
 
   const handlePredict = () => {
     setIsPredicting(true);
+    
+    // Simulate complex AI calculation based on metrics
     setTimeout(() => {
+      // Calculate a pseudo-probability (0-100)
+      let prob = 0;
+      prob += (50 - metrics.loginFreq) * 0.5; // Lower freq = higher risk
+      prob += (100 - metrics.attendance) * 0.4; // Lower attendance = higher risk
+      prob += metrics.irregularity * 20;
+      prob += metrics.lateNight * 25;
+      prob += metrics.delay * 3;
+      prob += (1 - metrics.trend) * 10;
+      prob += (1 - metrics.sentiment) * 10;
+      prob += metrics.entropy * 15;
+
+      prob = Math.min(Math.max(prob, 1.2), 98.9); // Clamp between 1.2 and 98.9
+      
+      const tier = prob > 70 ? 'High' : prob > 30 ? 'Medium' : 'Low';
+      
+      // Calculate dynamic attribution based on what's pushing the score up
+      const attribution = [
+        { label: 'Activity Entropy', value: Math.round(metrics.entropy * 50), color: 'bg-cyan-400' },
+        { label: 'Login Irregularity', value: Math.round(metrics.irregularity * 40), color: 'bg-purple-400' },
+        { label: 'Late Night Ratio', value: Math.round(metrics.lateNight * 30), color: 'bg-blue-400' },
+        { label: 'Attendance %', value: Math.round((85 - metrics.attendance) / 2), color: 'bg-rose-400' },
+        { label: 'Attendance Trend', value: Math.round(metrics.trend * -15), color: 'bg-amber-400' },
+      ].sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
+
+      // Dynamic draft message
+      let draft = "Dear Student, we've noticed some changes in your recent academic engagement patterns. ";
+      if (prob > 70) {
+        draft += "The data suggests you might be experiencing significant burnout. We'd like to schedule an urgent wellness check-in to discuss how we can support you.";
+      } else if (prob > 30) {
+        draft += "We've noticed some fluctuations in your routine, particularly regarding late-night activity. We're reaching out to share some time-management resources.";
+      } else {
+        draft += "Your engagement remains strong, but we've noticed minor shifts in your login patterns. Keep up the great work and remember to take breaks!";
+      }
+
+      setResults({
+        probability: parseFloat(prob.toFixed(1)),
+        tier,
+        attribution,
+        draft
+      });
+      
       setIsPredicting(false);
       setShowResults(true);
-    }, 1500);
+    }, 1200);
   };
 
   return (
@@ -268,7 +323,14 @@ export const AIStudioDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) 
                         <Shield size={20} className="text-cyan-400" />
                         <h3 className="text-lg font-black text-white tracking-tight">Risk Profile</h3>
                       </div>
-                      <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-500/20">Low</span>
+                      <span className={cn(
+                        "px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border",
+                        results.tier === 'High' ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
+                        results.tier === 'Medium' ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
+                        "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                      )}>
+                        {results.tier}
+                      </span>
                     </div>
 
                     <div className="flex flex-col items-center justify-center py-6">
@@ -292,24 +354,35 @@ export const AIStudioDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) 
                             fill="transparent"
                             strokeDasharray={502.6}
                             initial={{ strokeDashoffset: 502.6 }}
-                            animate={{ strokeDashoffset: 502.6 * (1 - 0.073) }}
+                            animate={{ strokeDashoffset: 502.6 * (1 - results.probability / 100) }}
                             transition={{ duration: 1.5, ease: "easeOut" }}
-                            className="text-cyan-400"
+                            className={cn(
+                              results.tier === 'High' ? "text-rose-400" :
+                              results.tier === 'Medium' ? "text-amber-400" :
+                              "text-cyan-400"
+                            )}
                           />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <span className="text-5xl font-black text-white tracking-tighter">7.3%</span>
+                          <span className="text-5xl font-black text-white tracking-tighter">{results.probability}%</span>
                           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Dropout Probability</span>
                         </div>
                       </div>
                       <p className="text-xs text-slate-400 text-center mt-8 leading-relaxed max-w-[200px]">
-                        High pattern alignment with historical burnout profiles.
+                        {results.tier === 'High' ? "Critical pattern alignment with historical dropout profiles." : 
+                         results.tier === 'Medium' ? "Moderate behavioral shifts detected in recent telemetry." :
+                         "High pattern alignment with historical stable profiles."}
                       </p>
                     </div>
 
                     <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <div className={cn(
+                          "w-2 h-2 rounded-full animate-pulse",
+                          results.tier === 'High' ? "bg-rose-500" :
+                          results.tier === 'Medium' ? "bg-amber-500" :
+                          "bg-emerald-500"
+                        )} />
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Intervention Logic</span>
                       </div>
                       <ChevronRight size={16} className="text-slate-600" />
@@ -324,13 +397,7 @@ export const AIStudioDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) 
                     </div>
 
                     <div className="space-y-6">
-                      {[
-                        { label: 'Activity Entropy', value: 45, color: 'bg-cyan-400' },
-                        { label: 'Login Irregularity', value: 32, color: 'bg-purple-400' },
-                        { label: 'Late Night Ratio', value: 18, color: 'bg-blue-400' },
-                        { label: 'Attendance %', value: -12, color: 'bg-rose-400' },
-                        { label: 'Attendance Trend', value: -8, color: 'bg-amber-400' },
-                      ].map((factor, i) => (
+                      {results.attribution.map((factor, i) => (
                         <div key={i} className="space-y-2">
                           <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
                             <span className="text-slate-400">{factor.label}</span>
@@ -389,11 +456,11 @@ export const AIStudioDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) 
                   <div className="relative pl-6 py-4">
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-cyan-400 rounded-full shadow-[0_0_10px_rgba(34,211,238,0.5)]" />
                     <p className="text-sm text-slate-300 leading-relaxed italic font-medium">
-                      "Dear Student, we've noticed some changes in your recent academic engagement patterns, particularly regarding your login irregularity and late-night activity. We're reaching out to share some study resources and wellness tips that might be helpful for maintaining a sustainable routine."
+                      "{results.draft}"
                     </p>
                     <div className="mt-4 flex items-center gap-2 text-[10px] font-black text-cyan-400 uppercase tracking-widest">
                       <AlertCircle size={12} />
-                      ACTION: Monitor. No immediate action required.
+                      ACTION: {results.tier === 'High' ? "Immediate Intervention Required." : results.tier === 'Medium' ? "Soft Outreach Recommended." : "Monitor. No immediate action required."}
                     </div>
                   </div>
 
