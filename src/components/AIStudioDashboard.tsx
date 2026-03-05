@@ -167,33 +167,7 @@ export const AIStudioDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) 
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0b1e] text-slate-200 font-sans p-8 selection:bg-cyan-500/30">
-      {/* Header */}
-      <div className="max-w-7xl mx-auto mb-12 flex items-center justify-between">
-        <button 
-          onClick={onBack}
-          className="flex items-center gap-3 group"
-        >
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-600/20 group-hover:scale-110 transition-transform">
-            <Zap size={20} className="text-white fill-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black tracking-tighter text-white flex items-center gap-2">
-              EduPulse <span className="text-cyan-400">AI</span>
-            </h1>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Early Detection System</p>
-          </div>
-        </button>
-
-        <div className="flex items-center gap-4">
-          <div className="flex bg-slate-900/50 backdrop-blur-md p-1 rounded-xl border border-white/5">
-            <button className="px-4 py-1.5 bg-cyan-500 text-slate-900 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-cyan-500/20">Individual</button>
-            <button className="px-4 py-1.5 text-slate-500 hover:text-slate-300 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors">Institutional</button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Panel: Student Metrics */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group">
@@ -489,6 +463,5 @@ export const AIStudioDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) 
           </AnimatePresence>
         </div>
       </div>
-    </div>
-  );
+    );
 };
